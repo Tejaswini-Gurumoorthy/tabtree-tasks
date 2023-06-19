@@ -1,14 +1,21 @@
 import { useEffect, useState } from 'react'
 import './App.css'
+import TableDisplay from './components/TableDisplay';
 
 function App() {
   const [attributes, setAttributes] = useState([]);
   const [url, setUrl] = useState('');
+  const [tableData, setTableData]= useState([]);
   const [selectedAttributes, setSelectedAttributes] = useState([]);
+  const [searching, setSearching]= useState(false);
+  const [sorting, setSorting]=useState(false);
+  const [noOfRows, setNoOfRows]=useState(0);
+  const [showTable, setShowTable]= useState(false);
 
 
   const fetchData = async () => {
     const data = await (await fetch(url)).json();
+    setTableData(data);
     const keys = Object.keys(data[0]);
     setAttributes(keys);
 
@@ -25,9 +32,30 @@ function App() {
     
   }
 
-  const showTable=()=>{
-    console.log(selectedAttributes);
+  const handleSearchConfig=(e)=>{
+    if(e.target.checked){
+      setSearching(true);
+    }
+    else{
+      setSearching(false);
+    }
+
   }
+
+  const handleSortConfig=(e)=>{
+    if(e.target.checked){
+      setSorting(true);
+    }
+    else{
+      setSorting(false);
+    }
+
+  }
+
+  const handleNoOfRows=(e)=>{
+    setNoOfRows(e.target.value);
+  }
+
 
   return (
     <>
@@ -50,14 +78,35 @@ function App() {
         {
           attributes.map((attribute) => (
             <div>
-              <input value={attribute} type='checkbox' onChange={handleAttributeChange} />
+              <input key={attribute.id} value={attribute} type='checkbox' onChange={handleAttributeChange} />
               <span>{attribute}</span>
             </div>
           ))
         }
-        <button onClick={showTable}>Show table</button>
+        <br/>
+        <label>
+          <input value={searching} type='checkbox' onChange={handleSearchConfig}/>
+          <span>Enable Search</span>
+          <br/>
+          <input value={sorting} type='checkbox' onChange={handleSortConfig}/>
+          <span>Enable Sort</span>
+        </label>
+        <br/>
+        <label>
+          Number of rows: 
+          <input type='number' onChange={handleNoOfRows}/>
+        </label>
+        <br/>
+        <br/>
+
+        <button onClick={()=>{
+          setShowTable(true);
+        }}>Show table</button>
       </>}
       <br />
+      <br/>
+      <br/>
+      {showTable && <TableDisplay columns={selectedAttributes} data={tableData} seraching={searching} sorting={sorting} rows={noOfRows}/>}
 
 
     </>
