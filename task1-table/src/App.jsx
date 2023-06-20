@@ -6,6 +6,7 @@ function App() {
   const [attributes, setAttributes] = useState([]);
   const [url, setUrl] = useState('');
   const [tableData, setTableData]= useState([]);
+  const [filteredData, setFilteredData]= useState([]);
   const [selectedAttributes, setSelectedAttributes] = useState([]);
   const [searching, setSearching]= useState(false);
   const [sorting, setSorting]=useState(false);
@@ -21,6 +22,7 @@ function App() {
 
 
   }
+
 
   const handleAttributeChange = (e) => {
     if (e.target.checked) {
@@ -52,17 +54,12 @@ function App() {
 
   }
 
-  const handleNoOfRows=(e)=>{
-    setNoOfRows(e.target.value);
-  }
-
-
   return (
     <>
       <h1>Table Operations</h1>
       <label>
         Data source:
-        <input onChange={(event) => {
+        <input style={{width: "300px"}} onChange={(event) => {
           setUrl(event.target.value);
         }} type='text' />
       </label>
@@ -74,7 +71,7 @@ function App() {
       <br/>
 
       {attributes.length > 0 && <>
-        <p>Select the attributes to be displayed-</p>
+        <b>Select the attributes to be displayed: </b>
         {
           attributes.map((attribute) => (
             <div>
@@ -85,16 +82,23 @@ function App() {
         }
         <br/>
         <label>
-          <input value={searching} type='checkbox' onChange={handleSearchConfig}/>
-          <span>Enable Search</span>
+          <input type='checkbox' onChange={handleSearchConfig}/>
+          <b> Enable Search</b>
           <br/>
-          <input value={sorting} type='checkbox' onChange={handleSortConfig}/>
-          <span>Enable Sort</span>
+          <input type='checkbox' onChange={handleSortConfig}/>
+          <b> Enable Sort</b>
         </label>
         <br/>
+        <br/>
+
         <label>
-          Number of rows: 
-          <input type='number' onChange={handleNoOfRows}/>
+          <b>Number of rows: </b>
+          <input type='number' value={noOfRows} onChange={(e)=>{
+            setNoOfRows(e.target.value)
+          }}/>
+          <br/>
+          <p>Leave it blank if you want the whole table.</p>
+          
         </label>
         <br/>
         <br/>
@@ -106,7 +110,7 @@ function App() {
       <br />
       <br/>
       <br/>
-      {showTable && <TableDisplay columns={selectedAttributes} data={tableData} seraching={searching} sorting={sorting} rows={noOfRows}/>}
+      {showTable && <TableDisplay columns={selectedAttributes} data={noOfRows>0? tableData.slice(0, noOfRows): tableData} searching={searching} sorting={sorting}/>}
 
 
     </>
