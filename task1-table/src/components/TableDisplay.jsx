@@ -1,22 +1,35 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 
 function TableDisplay(props) {
-  const [selectedAttribute, setSelectedAttribute] = useState('Select Attribute: ');
-  const [searchValue, setSearchValue] = useState('');
+  const [dataLength,setDataLength]= useState(props.data.length);
   const [filtered, setFiltered] = useState([]);
+  const [currentData, setCurrentData]= useState([]);
+  const [paginationNumber, setpaginationNumber]=useState(5);
+  const [totalPages, setTotalPages]= useState(dataLength/paginationNumber);
+  const [pageNumber, setPageNumber]= useState(1);
+
 
   useEffect(() => {
     setFiltered(props.data);
-    console.log(filtered)
+    setCurrentData(filtered.slice(0,paginationNumber));
   }, []);
 
   const handleDropdownChange = (e) => {
-    setSelectedAttribute(e.target.value)
-    sortByAttribute(e.target.value)
+    
+    if(e.target.value==='none')
+    {
+      setFiltered(props.data);
+    }
+    
+    else{
+      sortByAttribute(e.target.value);
+    }
+    console.log('filtered: ', filtered);
+    
   }
 
   const sortByAttribute = (columnName) => {
-    props.data.sort((a, b) => {
+    filtered.sort((a, b) => {
       var val_a = a[columnName];
       var val_b = b[columnName];
 
@@ -24,25 +37,49 @@ function TableDisplay(props) {
     })
   }
 
-  const searchOperation = () => {
-    console.log('Inside search- ')
-    if (searchValue === '') {
+  const searchOperation = (e) => {
+    if (e.target.value === '') {
       setFiltered(props.data);
     }
     else {
       const filteredData = props.data.filter((row) =>
-        props.columns.some((column) => row[column].toLowerCase().includes(searchValue.toLowerCase()))
+        props.columns.some((column) => row[column].toLowerCase().includes(e.target.value.toLowerCase()))
       );
       setFiltered(filteredData);
     }
 
   }
 
+  useEffect(()=>{
+    console.log('filtered length: ',filtered.length)
+    setDataLength(filtered.length);
+    const startValue= (pageNumber-1)*paginationNumber;
+    const endValue= (pageNumber)* paginationNumber;
+    setTotalPages(dataLength/paginationNumber>=1 ? Math.ceil(dataLength/paginationNumber) : 1);
+    setCurrentData(filtered.slice(startValue, endValue));
+},[paginationNumber, filtered, pageNumber])
+
+useEffect(()=>{
+  setPageNumber(1);
+  setTotalPages(dataLength/paginationNumber>=1 ? Math.ceil(dataLength/paginationNumber) : 1);
+
+},[dataLength])
+
   return (
     <>
-      {props.sorting && <label>
+      <div className='sort-and-search'>
+      {props.searching &&
+        (<>
+          <label className='search-box'>
+            Search:
+            <input className='search-input' type='text' onChange={searchOperation}  />
+          </label>
+        </>)
+      }
+      {props.sorting && <label className='sort-box'>
         Sort by:
-        <select value={selectedAttribute} onChange={handleDropdownChange}>
+        <select className='pagination-select' onChange={handleDropdownChange}>
+          <option value={`none`}>none</option>
           {props.columns.map((column) => (
             <>
               <option key={column.id} value={column} >{column}</option>
@@ -50,25 +87,9 @@ function TableDisplay(props) {
           ))}
         </select>
       </label>}
+      </div>
 
-      {props.searching &&
-        (<>
-          <label>
-            Search:
-            <input type='text' value={searchValue} onChange={(e) => {
-              setSearchValue(e.target.value);
-            }} />
-          </label>
-          <button onClick={searchOperation}>Search</button>
-        </>)
-      }
-      <br />
-
-      <h2>Table</h2>
-      <br />
-      <br />
-
-      <table border={'1px'}>
+      <table  border={'1px'}>
         <thead>
           <tr>
             {props.columns.map((column) => (
@@ -77,7 +98,7 @@ function TableDisplay(props) {
           </tr>
         </thead>
         <tbody>
-          {filtered.map((row) => (
+          {currentData.map((row) => (
             <tr key={row.id}>
               {props.columns.map((column) => (
                 <td key={column}>{row[column]}</td>
@@ -86,10 +107,21 @@ function TableDisplay(props) {
           ))}
         </tbody>
       </table>
+      <div className='pagination'>
+        <span>Number of rows: </span>
+        <select className='pagination-select' value={paginationNumber} onChange={(e)=>{setpaginationNumber(e.target.value)}}>
+          {
+            props.pagination.map((element)=>(
+              <option id={element.id} value={element}>{element}</option>
+            ))
+          }
+        </select>
+        <button className='arrow-button' onClick={()=>{setPageNumber(pageNumber-1)}} disabled={pageNumber<=1}>{`<`}</button>
+        {pageNumber<=totalPages ? (<span>{` ${pageNumber} / ${totalPages} `}</span>): setPageNumber(1)}
+        <button className='arrow-button' onClick={()=>{setPageNumber(pageNumber+1)}} disabled={pageNumber>=totalPages}>{`>`}</button>
 
-
-
-    </>
+      </div>
+ </>
   )
 }
 
