@@ -14,27 +14,39 @@ function TableDisplay(props) {
     setCurrentData(filtered.slice(0,paginationNumber));
   }, []);
 
-  const handleDropdownChange = (e) => {
-    
+  const handleDropdownChange = async(e) => {
+
     if(e.target.value==='none')
     {
       setFiltered(props.data);
     }
     
     else{
-      sortByAttribute(e.target.value);
+      await sortByAttribute(e.target.value).then((sorted)=>{
+        setFiltered(sorted);
+      }).catch((err)=>{
+        console.log('error while sorting: ',err)
+      });
     }
     console.log('filtered: ', filtered);
     
   }
 
-  const sortByAttribute = (columnName) => {
-    filtered.sort((a, b) => {
-      var val_a = a[columnName];
-      var val_b = b[columnName];
+  const sortByAttribute = async(columnName) => {
+    try{
+      const sorted= [...filtered].sort((a, b) => {
+        var val_a = a[columnName];
+        var val_b = b[columnName];
+  
+        return ((val_a < val_b) ? -1 : ((val_a > val_b) ? 1 : 0));
+      })
+      return sorted;
+    }
 
-      return ((val_a < val_b) ? -1 : ((val_a > val_b) ? 1 : 0));
-    })
+    catch(err){
+      return err;
+    }
+    
   }
 
   const searchOperation = (e) => {
@@ -51,13 +63,12 @@ function TableDisplay(props) {
   }
 
   useEffect(()=>{
-    console.log('filtered length: ',filtered.length)
     setDataLength(filtered.length);
+    setTotalPages(dataLength/paginationNumber>=1 ? Math.ceil(dataLength/paginationNumber) : 1);
     const startValue= (pageNumber-1)*paginationNumber;
     const endValue= (pageNumber)* paginationNumber;
-    setTotalPages(dataLength/paginationNumber>=1 ? Math.ceil(dataLength/paginationNumber) : 1);
     setCurrentData(filtered.slice(startValue, endValue));
-},[paginationNumber, filtered, pageNumber])
+    },[paginationNumber, filtered, pageNumber])
 
 useEffect(()=>{
   setPageNumber(1);
