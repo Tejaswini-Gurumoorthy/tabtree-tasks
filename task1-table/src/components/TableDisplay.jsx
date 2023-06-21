@@ -4,7 +4,7 @@ function TableDisplay(props) {
   const [dataLength,setDataLength]= useState(props.data.length);
   const [filtered, setFiltered] = useState([]);
   const [currentData, setCurrentData]= useState([]);
-  const [paginationNumber, setpaginationNumber]=useState(5);
+  const [paginationNumber, setpaginationNumber]=useState(props.pagination[0]);
   const [totalPages, setTotalPages]= useState(dataLength/paginationNumber);
   const [pageNumber, setPageNumber]= useState(1);
 
